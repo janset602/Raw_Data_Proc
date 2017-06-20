@@ -93,9 +93,6 @@ int main( int argc , char** argv ) {
 		ttime = get_time();
 		flags = snprintf( buff , MAX_PATH , "%s/%d-0%d-%d.log" , src_d , ttime.tm_year + 1900 , ttime.tm_mon + 1 , ttime.tm_mday );
 		if (( rfd = fopen( buff , "r" )) == ( FILE* )NULL ) {
-			write_err( err_c , "rfd not opened " );
-			write_err( err_c , buff );
-			write_err( err_c , "\n" );
 			sleep( time_val );
 			continue;
 		}
@@ -114,7 +111,6 @@ int main( int argc , char** argv ) {
 		flags = search_mw( rfd , "Name:" );
 		if ( flags == EOF ) {
 			fclose( rfd );
-			write_err( err_c , "Name not found\n" );
 			sleep( time_val );
 			continue;
 		}
@@ -124,7 +120,6 @@ int main( int argc , char** argv ) {
 			fclose( rfd );
 			if ( f_name != ( word* )NULL )
 				destroy_word( f_name );
-			write_err( err_c , "Name was not read\n" );
 			sleep( time_val );
 			continue;
 		}
@@ -152,7 +147,6 @@ int main( int argc , char** argv ) {
 			if (( flags = search_w( rfd , last_w->buff , last_w->len )) == EOF ) {
 				fclose( rfd );
 				fclose( wfd );
-				printf( "Failed to find measurements\n" );
 				sleep( time_val );
 				continue;
 			}
@@ -162,7 +156,6 @@ int main( int argc , char** argv ) {
 				fclose( wfd );
 				if ( header != ( word* )NULL )
 					destroy_word( header );
-				printf( "Failed to read header\n" );
 				sleep( time_val );
 				continue;
 			}
@@ -171,14 +164,12 @@ int main( int argc , char** argv ) {
 			find_rep( header , ';' , ',' );
 			fwrite( header->buff , header->len , 1 , wfd );
 			fputc( '\n' , wfd );
-			printf( "Count: %d\n" , count_d );
 			destroy_word( header );
 			destroy_word( last_w );
 			last_w = create_mword( "[start]" );
 		}
 
 		if ( search_w( rfd , last_w->buff , last_w->len ) == EOF ) {
-			printf( "Failed to find last_w: %s\n" , last_w->buff );
 			fclose( rfd );
 			fclose( wfd );
 			sleep( time_val );
