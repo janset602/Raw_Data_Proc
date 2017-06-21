@@ -6,8 +6,9 @@
 */
 
 
-#include "arghelp.h"
-#include "strl.h"
+#include "arghelp/arghelp.h"
+#include "strl/strl.h"
+#include "word/word.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -23,7 +24,6 @@
 #endif
 
 #include <time.h>
-#include "word.h"
 
 #ifdef __APPLE__
 int MAX_PATH;
