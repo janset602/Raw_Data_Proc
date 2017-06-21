@@ -18,6 +18,15 @@
 
 int MAX_PATH;
 
+int mkdir_t( char* filename ) {
+#ifdef __APPLE__
+	return mkdir( filename , S_IRWXU );
+#endif
+#ifdef OS_WINDOWS
+	return _mkdir( filename );
+#endif
+}
+
 int search_mw( FILE* fd , char* buff ) {
 	return search_w( fd , buff , strlength( buff , '\0' ));
 }
@@ -70,15 +79,16 @@ int main( int argc , char** argv ) {
 	if ( time_val == -1 )
 		time_val = 0;
 
-	if ( mkdir( dest_d , S_IRWXU ) < 0 && errno != EEXIST ) {
+	if ( mkdir_t( dest_d ) < 0 && errno != EEXIST ) {
 		printf( "Failed to mkdir\n" );
 		return -1;
 	}
-
+#ifdef __APPLE__
 	if (( MAX_PATH = pathconf( dest_d , _PC_NAME_MAX )) < 0 ) { //Gets Max Path Name for dest_d
 		printf( "Bad MP\n" );
 		return MAX_PATH;
 	}
+#endif
 
 	struct tm ttime;
 	FILE *rfd , *wfd;
@@ -98,7 +108,7 @@ int main( int argc , char** argv ) {
 		}
 
 		flags = snprintf( buff , MAX_PATH , "%s/%d.%d.%d" , dest_d , ttime.tm_year + 1900 , ttime.tm_mon + 1 , ttime. tm_mday );
-		if ( mkdir( buff , S_IRWXU ) < 0 && errno != EEXIST ) {
+		if ( mkdir_t( buff ) < 0 && errno != EEXIST ) {
 			/*
 			 * Other issues
 			 */
@@ -198,9 +208,11 @@ int main( int argc , char** argv ) {
 		fclose( wfd );
 
 		if ( ttime.tm_hour == 1 ) {
-			printf( "One\n" );
+			//Delete rfd
+			destroy_word( last_w );
+			last_w = create_mword( "[measurements]" );
 		}
-
+		printf( "End\n" );
 		sleep( time_val );
 	}
 
