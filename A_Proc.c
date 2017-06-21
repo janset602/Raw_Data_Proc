@@ -12,19 +12,32 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <errno.h>
+
+#ifdef __APPLE__
 #include <unistd.h>
+#endif
+
+#ifdef OS_WINDOWS
+#include <Windows.h>
+#endif
+
 #include <time.h>
 #include "word/word.h"
 
+#ifdef __APPLE__
 int MAX_PATH;
+#endif
 
 int mkdir_t( char* filename ) {
+
 #ifdef __APPLE__
 	return mkdir( filename , S_IRWXU );
 #endif
+
 #ifdef OS_WINDOWS
 	return _mkdir( filename );
 #endif
+
 }
 
 int search_mw( FILE* fd , char* buff ) {
