@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
 
 			last_w = strncpy( last_w , rbuff , strlen( rbuff ) + 1 ); //Set last_w to most recent valid data point
 			find_rep(rbuff, ';', ','); //Format into .csv
-			fwrite(rbuff, strlen( rbuff ) + 1 , 1, wfd);
+			fwrite(rbuff, strlen( rbuff ) , 1, wfd);
 			fputc('\n', wfd);
 		}
 
