@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
 	char* path_buff = (char*)malloc(MAX_PATH + 1);
 	char* rbuff = ( char* )malloc( 1025 );
 	char* last_w = ( char* )malloc( 1025 );
+	char* format;
 
 	last_w = strncpy( last_w , "[measurements]" , strlen( "[measurements]" ) + 1 );
 
@@ -83,8 +84,12 @@ int main(int argc, char** argv) {
 			continue;
 		}
 
-		flags = snprintf(path_buff, MAX_PATH, "%s/%d-0%d-%d.log", src_d, ttime.tm_year + 1900, ttime.tm_mon + 1, ttime.tm_mday); //Getting current raw file
-		if ((rfd = fopen(path_buff , "r")) == (FILE*)NULL) { //Assumes that raw file has not been created
+		if (((ttime.tm_mon + 1 ) / 10 ) < 1 )
+			format = "%s/%d-0%d-%d.log";
+		else
+			format = "%s/%d-%d-%d.log";
+		flags = snprintf(path_buff, MAX_PATH, ( const char* )format , src_d, ttime.tm_year + 1900, ttime.tm_mon + 1, ttime.tm_mday); //Getting current raw file
+		if ((rfd = fopen( path_buff , "r")) == (FILE*)NULL) { //Assumes that raw file has not been created
 			sleep_t(time_val);
 			continue;
 		}
