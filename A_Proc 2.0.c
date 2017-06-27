@@ -72,7 +72,6 @@ int main(int argc, char** argv) {
 	char* path_buff = (char*)malloc(MAX_PATH + 1);
 	char* rbuff = ( char* )malloc( 1025 );
 	char* last_w = ( char* )malloc( 1025 );
-	char* format;
 
 	last_w = strncpy( last_w , "[measurements]" , strlen( "[measurements]" ) + 1 );
 
@@ -82,22 +81,14 @@ int main(int argc, char** argv) {
 			//Delete rfd
 			time_t t = time( NULL ) - 60*60*24;
 			struct tm tm_t = *localtime( &t );
-			if (((ttime.tm_mon + 1 ) / 10 ) < 1 )
-				format = "%s/%d-0%d-%d.log";
-			else
-				format = "%s/%d-%d-%d.log";
-			snprintf( rbuff , 1024 , format , tm_t.tm_year + 1900 , tm_t.tm_mon + 1 , tm_t.tm_mday );
+
+			snprintf( rbuff , 1024 , "%s/%d-%02d-%d.log" , src_d , tm_t.tm_year + 1900 , tm_t.tm_mon + 1 , tm_t.tm_mday );
 			printf( "%s\n" , rbuff );
 			last_w = strncpy( last_w , "[measurements]" , strlen( "[measurements]" ) + 1 );
 			continue;
 		}
 
-		if (((ttime.tm_mon + 1 ) / 10 ) < 1 )
-			format = "%s/%d-0%d-%d.log";
-		else
-			format = "%s/%d-%d-%d.log";
-
-		flags = snprintf(path_buff, MAX_PATH, ( const char* )format , src_d, ttime.tm_year + 1900, ttime.tm_mon + 1, ttime.tm_mday);
+		flags = snprintf(path_buff, MAX_PATH, "%s/%d-%02d-%d.log" , src_d, ttime.tm_year + 1900, ttime.tm_mon + 1, ttime.tm_mday);
 		if ((rfd = fopen( path_buff , "r")) == (FILE*)NULL) { //Assumes that raw file has not been created
 			sleep_t(time_val);
 			continue;
