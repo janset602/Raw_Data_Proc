@@ -78,8 +78,16 @@ int main(int argc, char** argv) {
 
 	while (1) {
 		ttime = get_time(); //Updates Date
-		if (ttime.tm_hour == 1) { //If 1 o'clock, move onto new file and record variable names
+		if (ttime.tm_hour == 1 ) { //If 1 o'clock, move onto new file and record variable names
 			//Delete rfd
+			time_t t = time( NULL ) - 60*60*24;
+			struct tm tm_t = *localtime( &t );
+			if (((ttime.tm_mon + 1 ) / 10 ) < 1 )
+				format = "%s/%d-0%d-%d.log";
+			else
+				format = "%s/%d-%d-%d.log";
+			snprintf( rbuff , 1024 , format , tm_t.tm_year + 1900 , tm_t.tm_mon + 1 , tm_t.tm_mday );
+			printf( "%s\n" , rbuff );
 			last_w = strncpy( last_w , "[measurements]" , strlen( "[measurements]" ) + 1 );
 			continue;
 		}
@@ -88,7 +96,8 @@ int main(int argc, char** argv) {
 			format = "%s/%d-0%d-%d.log";
 		else
 			format = "%s/%d-%d-%d.log";
-		flags = snprintf(path_buff, MAX_PATH, ( const char* )format , src_d, ttime.tm_year + 1900, ttime.tm_mon + 1, ttime.tm_mday); //Getting current raw file
+
+		flags = snprintf(path_buff, MAX_PATH, ( const char* )format , src_d, ttime.tm_year + 1900, ttime.tm_mon + 1, ttime.tm_mday);
 		if ((rfd = fopen( path_buff , "r")) == (FILE*)NULL) { //Assumes that raw file has not been created
 			sleep_t(time_val);
 			continue;
