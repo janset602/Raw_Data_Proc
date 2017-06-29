@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 	src_d = getstring(argc, argv, 's'); //Where raw data is stored
 	dest_d = getstring(argc, argv, 'd'); //Proccessed data storage
 	rsave_d = getstring(argc, argv, 'r');
-	buff = (char*)malloc(1025);
+	buff = (char*)malloc(MAX_PATH + 1);
 	sPath = (char*)malloc(MAX_PATH + 1);
 	err_buff = (char*)malloc(1025);
 
@@ -72,22 +72,28 @@ int main(int argc, char** argv) {
 		do {
 			if (strncmp(fd.cFileName, ".", strlen(fd.cFileName)) == 0 || strncmp(fd.cFileName, "..", strlen(fd.cFileName)) == 0) 
 				continue;
+
 			tm = parse_t(fd.cFileName); //Gets raw_data filename into a date
 			snprintf(sPath, MAX_PATH, "%s\\%s", src_d, fd.cFileName); //Getting path to raw_data file using src_d
-			snprintf(buff, MAX_PATH, "%s\\%d.%02d.%02d", dest_d, tm.tm_year, tm.tm_mon, tm.tm_mday); //Creating name for destination directory using dat
+			snprintf(buff, MAX_PATH, "%s\\%d.%02d.%02d", dest_d, tm.tm_year, tm.tm_mon, tm.tm_mday); //Creating name for destination directory using data
+
 			if (_mkdir(buff) < 0 && errno != EEXIST) { //Creates destination directory
 				snprintf(err_buff, 1024, "Failed to mkdir: %s\n", buff);
 				write_err(err_buff);
 				return -1;
 			}
+
 			if (fproc_a(sPath, buff, tm, timeval) < 0) //fproc_a failure
 				return -1;
 			
 			FILE* rcop = fopen(sPath, "r");
-			if (fcopy(rcop, fd.cFileName, rsave_d) < 0)
+			if (fcopy(rcop, fd.cFileName, rsave_d) < 0) {
+				fclose(rcop);
 				return -1;
+			}
 			fclose(rcop);
-			if (!DeleteFileA(sPath)) {
+
+			if (!DeleteFileA(sPath)) { //Also a larger error that should be addressed ASP
 				snprintf(err_buff, 1024, "Failed to Delete: %s\n", sPath);
 				write_err(err_buff);
 			}
@@ -127,11 +133,13 @@ int fproc_a(char* raw_f, char* proc, struct tm ftime, int time_val) { //raw_f is
 		}
 
 		if (( flags = search_s( rfd , "Name:" )) == EOF ) { // Searches for inverter name
+			fclose(rfd);
 			Sleep(time_val * 1000);
 			continue;
 		}
 
 		if (read_s(rfd, buff, &flags, 1024) == (char*)NULL || flags == EOF) { //If reading inverter name fails or hits EOF
+			fclose(rfd);
 			Sleep(time_val * 1000);
 			continue;
 		}
@@ -222,11 +230,9 @@ int find_rep(char* buff, char f, char r) {
 
 int count_w(char* buff, char c) {
 	int cnt = 0;
-	for (size_t i = 0; i < strlen(buff); i++) {
-		if (buff[i] == c) {
+	for (size_t i = 0; i < strlen(buff); i++)
+		if (buff[i] == c)
 			cnt++;
-		}
-	}
 	return cnt;
 }
 
@@ -247,9 +253,8 @@ char* read_s(FILE* fd, char* buff, int* flags, int sz) {
 		i--;
 #endif
 
-	if (buff[i] == EOF) { //if word read was the last word in the file
+	if (buff[i] == EOF) //if word read was the last word in the file
 		*flags = EOF;
-	}
 
 	buff[i] = '\0';
 	return buff;
@@ -257,7 +262,7 @@ char* read_s(FILE* fd, char* buff, int* flags, int sz) {
 
 int search_s(FILE* fd, char* search) {
 	int flags = 0;
-	char* buff = (char*)malloc(1024);
+	char* buff = (char*)malloc(1025);
 	while (flags != EOF) {
 		if (read_s(fd, buff, &flags, 1024) == (char*)NULL)
 			continue;
@@ -290,9 +295,8 @@ int fcopy(FILE* rfd, char* fname, char* dest_d) {
 		free(sPath);
 		return -1;
 	}
-	int i;
-	while ((i = fgetc(rfd)) != EOF)
-		fputc(i, wfd);
+
+	while (fputc(fgetc(rfd), wfd) != EOF);
 
 	fclose(wfd);
 	free(sPath);
