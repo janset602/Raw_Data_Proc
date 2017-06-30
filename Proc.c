@@ -296,7 +296,9 @@ int fcopy(FILE* rfd, char* fname, char* dest_d) {
 		return -1;
 	}
 
-	while (fputc(fgetc(rfd), wfd) != EOF);
+	int i;
+	while ((i = fgetc(rfd)) != EOF)
+		fputc(i, wfd);
 
 	fclose(wfd);
 	free(sPath);
